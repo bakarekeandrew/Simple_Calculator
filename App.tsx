@@ -2,63 +2,55 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const App: React.FC = () => {
-  const [input, setInput] = useState<string>('');
-  const [output, setOutput] = useState<string>('0');
-  const [num1, setNum1] = useState<number>(0);
-  const [num2, setNum2] = useState<number>(0);
-  const [operand, setOperand] = useState<string>('');
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('0');
+  const [num1, setNum1] = useState(0);
+  const [operand, setOperand] = useState('');
 
-  const buttonPressed = (buttonText: string) => {
+  const handlePress = (buttonText: string) => {
     if (buttonText === 'C') {
       setInput('');
       setNum1(0);
-      setNum2(0);
       setOperand('');
     } else if (['+', '-', '*', '/'].includes(buttonText)) {
       setNum1(parseFloat(input));
       setOperand(buttonText);
       setInput('');
-    } else if (buttonText === '.') {
-      if (!input.includes('.')) {
-        setInput(input + buttonText);
-      }
     } else if (buttonText === '=') {
-      setNum2(parseFloat(input));
-      let result;
+      const num2 = parseFloat(input);
+      let result = num1;
+
       switch (operand) {
         case '+':
-          result = num1 + parseFloat(input);
+          result += num2;
           break;
         case '-':
-          result = num1 - parseFloat(input);
+          result -= num2;
           break;
         case '*':
-          result = num1 * parseFloat(input);
+          result *= num2;
           break;
         case '/':
-          result = num1 / parseFloat(input);
-          break;
-        default:
-          result = parseFloat(input);
+          result /= num2;
           break;
       }
+
       setOutput(result.toString());
       setInput(result.toString());
       setNum1(0);
-      setNum2(0);
       setOperand('');
     } else {
       setInput(input + buttonText);
     }
   };
 
-  const buildButton = (buttonText: string, buttonColor: string, textColor: string) => (
+  const renderButton = (text: string, color: string) => (
     <TouchableOpacity
-      key={buttonText} // Unique key for each button
-      onPress={() => buttonPressed(buttonText)}
-      style={[styles.button, { backgroundColor: buttonColor }]}
+      key={text}
+      style={[styles.button, { backgroundColor: color }]}
+      onPress={() => handlePress(text)}
     >
-      <Text style={[styles.buttonText, { color: textColor }]}>{buttonText}</Text>
+      <Text style={styles.buttonText}>{text}</Text>
     </TouchableOpacity>
   );
 
@@ -67,31 +59,19 @@ const App: React.FC = () => {
       <View style={styles.display}>
         <Text style={styles.displayText}>{input}</Text>
       </View>
-      <View style={styles.row}>
-        {['7', '8', '9', '/'].map((text) =>
-          buildButton(text, text === '/' ? 'orange' : 'grey', 'white')
-        )}
-      </View>
-      <View style={styles.row}>
-        {['4', '5', '6', '*'].map((text) =>
-          buildButton(text, text === '*' ? 'orange' : 'grey', 'white')
-        )}
-      </View>
-      <View style={styles.row}>
-        {['1', '2', '3', '-'].map((text) =>
-          buildButton(text, text === '-' ? 'orange' : 'grey', 'white')
-        )}
-      </View>
-      <View style={styles.row}>
-        {['.', '0', '00', '+'].map((text) =>
-          buildButton(text, text === '+' ? 'orange' : 'grey', 'white')
-        )}
-      </View>
-      <View style={styles.row}>
-        {['C', '='].map((text) =>
-          buildButton(text, text === '=' ? 'green' : 'red', 'white')
-        )}
-      </View>
+      {[
+        ['7', '8', '9', '/'],
+        ['4', '5', '6', '*'],
+        ['1', '2', '3', '-'],
+        ['.', '0', '00', '+'],
+        ['C', '=']
+      ].map((row, rowIndex) => (
+        <View key={rowIndex} style={styles.row}>
+          {row.map((text) =>
+            renderButton(text, text.match(/[+\-*/=]/) ? 'orange' : text === 'C' ? 'red' : 'grey')
+          )}
+        </View>
+      ))}
     </View>
   );
 };
@@ -128,6 +108,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: 'white',
   },
 });
 
